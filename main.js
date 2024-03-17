@@ -1,17 +1,5 @@
 import { createBoard, playMove } from "./connect4.js";
 
-window.addEventListener("DOMContentLoaded", () => {
-  // Initialise the UI.
-  const board = document.querySelector(".board");
-  console.log("hello");
-  createBoard(board);
-  // Open the WebSocket connection and register event handlers.
-  const websocket = new WebSocket("ws://localhost:8001");
-  initGame(websocket);
-  receiveMoves(board, websocket);
-  sendMoves(board, websocket);
-});
-
 function initGame(websocket) {
   websocket.addEventListener("open", () => {
     // Send an "init" event according to who is connecting.
@@ -62,13 +50,14 @@ function receiveMoves(board, websocket) {
 }
 
 function sendMoves(board, websocket) {
+  // Don't send moves for a spectator watching the game.
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("watch")) {
+    return;
+  }
+
   // When clicking a column, send a "play" event for a move in that column.
   board.addEventListener("click", ({ target }) => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("watch")) {
-      return;
-    }
-
     const column = target.dataset.column;
     if (column === undefined) {
       return;
@@ -81,3 +70,14 @@ function sendMoves(board, websocket) {
 function showMessage(message) {
   window.setTimeout(() => window.alert(message), 50);
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  // Initialise the UI.
+  const board = document.querySelector(".board");
+  createBoard(board);
+  // Open the WebSocket connection and register event handlers.
+  const websocket = new WebSocket("ws://localhost:8001");
+  initGame(websocket);
+  receiveMoves(board, websocket);
+  sendMoves(board, websocket);
+});
