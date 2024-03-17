@@ -71,12 +71,22 @@ function showMessage(message) {
   window.setTimeout(() => window.alert(message), 50);
 }
 
+function getWebSocketServer() {
+  if (window.location.host === "sendelivery.github.io") {
+    return "wss://ws-connect-four-15e9a3181e71.herokuapp.com/";
+  } else if (window.location.host === "localhost:8000") {
+    return "ws://localhost:80001";
+  } else {
+    throw new Error(`Unsupported host: ${window.location.host}`);
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   // Initialise the UI.
   const board = document.querySelector(".board");
   createBoard(board);
   // Open the WebSocket connection and register event handlers.
-  const websocket = new WebSocket("ws://localhost:8001");
+  const websocket = new WebSocket(getWebSocketServer());
   initGame(websocket);
   receiveMoves(board, websocket);
   sendMoves(board, websocket);
